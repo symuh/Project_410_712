@@ -1,0 +1,42 @@
+How to write the data frame in R into MySQL?
+
+Use the dbWriteTable function. It looks like this :
+
+dbWriteTable(connection, value = data.frame, name = "MyTable", append = TRUE ) 
+
+#=========================================================================
+
+function documentation can be found: RMySQL dbWriteTable with field.types
+
+#========================================================================
+I have a data frame, called df, that looks like this:
+
+dte, val
+2012-01-01, 23.2323
+2012-01-02, 34.343
+
+The type on the columns is date and numeric. I would like to write this to a MySQL database using an already open connection. The connection works fine as I am able to query the db fine. I try to run the following:
+
+dbWriteTable(con, name="table_name", value=df, field.types=list("date", "double(20,10)"))
+
+This generates the error:
+
+    Error in function (classes, fdef, mtable) : unable to find an inherited method for function "make.db.names", for signature "MySQLConnection", "NULL"
+
+If I do not specify a field.types, and run:
+
+dbWriteTable(con, name="table_name", value=df)
+
+I get the error:
+
+    Error in mysqlExecStatement(conn, statement, ...) : RS-DBI driver: (could not run statement: BLOB/TEXT column 'dte' used in key specification without a key length)
+
+Can anyone shed some light on this?
+
+After playing with things, I realized what the problem is: field.types must be a NAMED list, not simply a list; additionally the row names must not be included otherwise we need three field types. For the above example, the following works fine:
+
+dbWriteTable(con, name="table_name", value=df, field.types=list(dte="date", val="double(20,10)"), row.names=FALSE)
+
+
+
+
